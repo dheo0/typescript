@@ -906,6 +906,9 @@ p {
 }
 }
 
+
+.btn-king {width: 100px;height: 100px}
+
 @keyframes slidein {
     from {
         opacity: 0;

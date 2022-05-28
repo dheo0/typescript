@@ -1,5 +1,7 @@
 // pure 자바스크립트에서는 실행을 통해서만 결과값, 리턴값을 확인할 수가 있었는데
 // 실행하기 전에 이러한 값을을 예측하기 위한 대안은 static type system 을 이욯하는 것이다
+
+
 function greeter(fn) {
     fn("hello world");
 }
@@ -130,16 +132,135 @@ if ("Promise" in window) {
 
 // input maxlength 오토포커스
 const inputs = $("input");
+console.log(typeof inputs)
+console.log(inputs)
+const isChk = Array.from(inputs).every((item) => item.value.length == 4);
+
+
+console.log(isChk)
+let values = null;
 
 inputs.each(function(index, item){
+
     $(this).bind("keyup", function(elem) {
         let length = elem.target.value.length;
         console.log(length)
+        console.log(isChk)
         if(length === 4) {
             if(index < inputs.length -1) {
                 inputs[++index].focus();
             }
         }
     })
-
 })
+
+const array = Array.from(inputs)
+
+// 카드번호가 채워지지 않는 곳으로 포커스 이동
+$(".btn-king").on('click', () =>{
+    const values = [];
+    for( input of inputs) {
+        values.push(input.value.length)
+    }
+    console.log(values)
+    let focusIndex = values.findIndex( v => v < 4)
+    console.log(focusIndex)
+    if(focusIndex > 0 ) {
+        $('input')[focusIndex].focus()
+    }
+})
+
+
+let abc = 0;
+window.addEventListener('load', ()=> {
+    abc++;
+    console.log(`${abc} ++++ `)
+    f()
+        .then( (e) => {
+            abc = e
+            console.log(abc)
+        })
+        .catch( (e) => console.error(e))
+})
+
+async function f() {
+
+    let promise = new Promise((resolve, reject) => {
+        setTimeout(() => resolve("완료!!!!!!!!!!!!!!!!!!!!!!!!!!!!"), 1000)
+    });
+
+    let result = await promise; // 프라미스가 이행될 때까지 기다림 (*)
+
+    return result
+}
+
+
+const data2 = [
+    {
+        name: 'davids',
+        score: 50
+    },
+    {
+        name: 'kim',
+        score: 100
+    },
+]
+
+function mcu() {
+    const abc = 5
+    if(abc > 3) {
+        return `<button class="def">CLASS</button>`
+    } else {
+        return 1
+    }
+}
+
+
+const createDom =  {
+    UserList() {
+        const result = data2.map((item) => {
+            return `<div>
+                <div class=${item.name === 'davids' ? 'active' : ''}>
+                    <b>${item.name}</b> <span>(${item.score})</span>
+                    <button class="abc">abc</button>
+                    ${mcu()}
+                </div>
+            </div>`
+        })
+        return result
+    }
+}
+
+
+//$("#data").append(createDom.UserList)
+
+
+$('.abc').on("click", function() {
+    console.log('aaaaaaaaaa')
+})
+
+$('.def').on("click", function() {
+    console.log('def')
+})
+
+const dog = {
+    name : "멍멍이",
+    mcu() {
+        const abc = 5
+        if(abc > 3) {
+            return `<button class="def">CLASS</button>`
+        } else {
+            return 1
+        }
+    },
+    say() {
+        return `<div class="def">${this.mcu()}</div>`
+    },
+    action() {
+        $('.def').on("click", function() {
+            console.log('def')
+        })
+    }
+};
+$("#data").append(dog.say())
+dog.action();
