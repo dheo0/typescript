@@ -197,7 +197,7 @@ async function f() {
 
 const data2 = [
     {
-        name: 'davids',
+        name: 'd-a-v-i-d-s',
         score: 50
     },
     {
@@ -206,24 +206,28 @@ const data2 = [
     },
 ]
 
-function mcu() {
-    const abc = 5
-    if(abc > 3) {
-        return `<button class="def">CLASS</button>`
-    } else {
-        return 1
-    }
+const normalStatusBtns = () => {
+    return `
+        <button class="def">normalButton</button>
+        <button class="def">normalButton</button>
+    `
 }
 
+const lostStatusBtns = () => {
+    return `
+        <button class="def">lostButton</button>
+        <button class="def">lostButton</button>
+    `
+}
 
 const createDom =  {
     UserList() {
         const result = data2.map((item) => {
             return `<div>
                 <div class=${item.name === 'davids' ? 'active' : ''}>
-                    <b>${item.name}</b> <span>(${item.score})</span>
+                    <b>${item.name.replace(/-/g, '')}</b> <span>(${item.score})</span>
                     <button class="abc">abc</button>
-                    ${mcu()}
+                    ${item.name === 'davids'? normalStatusBtns() : lostStatusBtns()}
                 </div>
             </div>`
         })
@@ -231,8 +235,7 @@ const createDom =  {
     }
 }
 
-
-//$("#data").append(createDom.UserList)
+$("#data").append(createDom.UserList)
 
 
 $('.abc').on("click", function() {
@@ -262,5 +265,57 @@ const dog = {
         })
     }
 };
-$("#data").append(dog.say())
 dog.action();
+
+
+var d = 'X';
+
+function outer(){
+    var a = 1;
+    var b = 'B';
+
+    function inner(){
+        var a = 2;
+        console.log('here',b);
+    }
+    return inner;
+}
+
+var someFun = outer();
+someFun();
+
+
+const elementToObserve = document.querySelector(".inputs input");
+
+// create a new instance of `MutationObserver` named `observer`,
+// passing it a callback function
+const observer = new MutationObserver(function() {
+    console.log('callback that runs when observer is triggered');
+});
+
+// call `observe()` on that MutationObserver instance,
+// passing it the element to observe, and the options object
+observer.observe(elementToObserve, {subtree: true, childList: true});
+
+/*
+var MutationObserver = window.MutationObserver || window.WebKitMutationObserver || window.MozMutationObserver;
+var list = document.querySelector('ol');
+
+var observer = new MutationObserver(function(mutations) {
+    mutations.forEach(function(mutation) {
+        if (mutation.type === 'childList') {
+            var list_values = [].slice.call(list.children)
+                .map( function(node) { return node.innerHTML; })
+                .filter( function(s) {
+                    if (s === '<br>') {
+                        return false;
+                    }
+                    else {
+                        return true;
+                    }
+                });
+            console.log(list_values);
+        }
+    });
+});*/
+
