@@ -156,8 +156,12 @@ inputs.each(function(index, item){
 
 const array = Array.from(inputs)
 
+const target = (event?.currentTarget) ? event?.currentTarget : event?.srcElement;
+
 // 카드번호가 채워지지 않는 곳으로 포커스 이동
-$(".btn-king").on('click', () =>{
+$(".btn-king").on('click', (event) =>{
+
+    console.log("::::::::::::::::::::::::::::::::::::", target)
     const values = [];
     for( input of inputs) {
         values.push(input.value.length)
@@ -318,4 +322,6 @@ var observer = new MutationObserver(function(mutations) {
         }
     });
 });*/
+
+
 

@@ -7,9 +7,9 @@
 
 
 let users = [
-    { id: 11, name: 'Adam', age: 23, group: 'editor' },
-    { id: 47, name: 'John', age: 28, group: 'admin' },
-    { id: 85, name: 'William', age: 34, group: 'editor' },
+    { id: 11, name: 'Adam', age: 23, group: '정상' },
+    { id: 47, name: 'John', age: 28, group: '다리' },
+    { id: 85, name: 'William', age: 34, group: '정상' },
     { id: 97, name: 'Oliver', age: 28, group: 'admin' }
 ];
 
@@ -28,3 +28,27 @@ function admin(user) {
 }
 
 
+
+
+const sortUserA = users.sort(function(a, b) {
+
+    const groupA = a.group;
+    const groupB = b.group;
+    const idA = a.id;
+    const idB = b.id;
+    if (groupA < groupB) {
+        return -1;
+    }
+    else if (groupA > groupB) {
+        return 1;
+    }
+    else if (idA < idB) {
+        return -1;
+    }
+    else if (idA > idB) {
+        return 1;
+    }
+    return 0;
+});
+
+console.log('sortUser', sortUserA)
