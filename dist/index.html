@@ -49,11 +49,30 @@
         <span>-</span>
     </div>
 
+    <div>
+        <input type="text" id="email">
+    </div>
+
     <button type="button" class="btn-king">킹받네</button>
 
     <div id="data"></div>
-    <script src="./main.js"></script>
+    <!--<script src="./main.js"></script>
     <script src="./array.js"></script>
+    <script src="./map.js"></script>-->
+    <script>
+        const email = document.querySelector("#email")
+        email.addEventListener('keyup', fn_submit)
+    function fn_submit() {
+        var text = document.getElementById('email').value;
+
+        var regEmail = /^([\w\.\_\-])*[a-zA-Z0-9]+([\w\.\_\-])*([a-zA-Z0-9])+([\w\.\_\-])+@([a-zA-Z0-9]+\.)+[a-zA-Z0-9]{2,8}$/;
+        if (regEmail.test(text) === true) {
+            console.log('입력된 값은 이메일입니다.');
+        } else {
+            console.log('false');
+        }
+    }
+    </script>
     <!--<script src="./functions.js"></script>-->
     <!--<script src="./closer.js"></script>-->
 </div>
