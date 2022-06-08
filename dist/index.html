@@ -62,17 +62,31 @@
     <script>
         const email = document.querySelector("#email")
         email.addEventListener('keyup', fn_submit)
+
     function fn_submit() {
         var text = document.getElementById('email').value;
-
         var regEmail =  /^[0-9a-zA-Z_.-]([-_.]?[0-9a-zA-Z_.-])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}$/i
-            /* /^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}$/i */
+            /*
+                /^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}$/i
+                /^(?=.*[a-zA-Z])(?=.*[^a-zA-Z0-9]|.*[0-9]).{5,50}$/
 
-        if (regEmail.test(text) === true) {
-            console.log('입력된 값은 이메일입니다.');
-        } else {
-            console.log('false');
+                (?=.*\d)(?=.*[a-zA-z]).[@.\-].{5,50}
+            */
+        let regId = /^[a-zA-Z0-9@-_.]{5,50}$/
+        // console.log(regId.test(text) && isNaN(Number(text)))
+        const countBlank = text.replace(/\s+/g, '').length
+        const allCount = text.length;
+        console.log('공백제외',text.replace(/\s+/g, '').length)
+        console.log('전체',text.length)
+        let lastText = null
+        if (allCount - countBlank === 2) {
+            console.log('allCount - countBlank', allCount - countBlank)
+            lastText = text.slice(0, countBlank + 1)
+            document.getElementById('email').value = lastText
         }
+
+
+
     }
     </script>
     <!--<script src="./functions.js"></script>-->
