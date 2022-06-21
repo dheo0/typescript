@@ -29,14 +29,15 @@
     <div id="log"></div>
 
     <div class="inputs">
-        <input type="tel" maxlength="4">
+        <input type="text" maxlength="10" id="id">
         <span>-</span>
-        <input type="tel" maxlength="4">
+        <input type="text" maxlength="10" id="pw">
         <span>-</span>
-        <input type="tel" maxlength="4">
+        <input type="text" maxlength=10" id="birth">
         <span>-</span>
-        <input type="tel" maxlength="4">
+        <input type="text" maxlength="10" id="month">
         <span>-</span>
+
     </div>
     <div class="inputs">
         <input type="tel" maxlength="4">
@@ -85,9 +86,60 @@
             document.getElementById('email').value = lastText
         }
 
-
-
     }
+
+        function resolveAfter2Seconds() {
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    resolve('resolved');
+                }, 2000);
+            });
+        }
+
+        async function asyncCall() {
+            console.log('calling');
+            const result = await resolveAfter2Seconds();
+            console.log(result);
+            // expected output: "resolved"
+        }
+
+        asyncCall().then().finally(console.log('finished'));
+
+
+
+
+        document.querySelector('.btn-king').addEventListener('click', ()=> {
+            const id = document.querySelector('#id').value
+            const pw = document.querySelector('#pw').value
+            const birth = document.querySelector('#birth').value
+            const month = document.querySelector('#month').value
+
+            const birthfirst = birth.substring(0, 2)
+            const monthfirst = month.substring(0, 2)
+            let ischk1 = ''
+            let ischk2 = ''
+            let ischk3 = ''
+
+            console.log(birthfirst, '<<<<<<<<<<<<<<<<<<<<<birstfirst')
+            console.log(monthfirst, '<<<<<<<<<<<<<<<<<<<<<monthfirst')
+            if (id === pw && pw.length > 0) {
+                ischk1 = 'id'
+            }
+            if (pw.indexOf(birthfirst) >= 0 && birth.length > 0) {
+                ischk2 = 'birth'
+            }
+            if (pw.indexOf(monthfirst) >= 0 && month.length > 0) {
+                ischk3 = 'month'
+            }
+
+            console.log(pw.indexOf(birthfirst), '<<<<<<<<<<<<<<<<<<<<<  pw.indexOf(birthfirst)')
+            console.log(pw.indexOf(monthfirst), '<<<<<<<<<<<<<<<<<<<<<  pw.indexOf(monthfirst)')
+
+
+            const strSum = ischk1+ischk2+ischk3
+            console.log(strSum +'========  '+strSum.length)
+
+        })
     </script>
     <!--<script src="./functions.js"></script>-->
     <!--<script src="./closer.js"></script>-->
