@@ -1,0 +1,317 @@
+<form name="checkPlusForm" id="checkPlusForm" method="post">
+    <input type="hidden" name="m" id="m" value="checkplusSerivce" />
+    <input type="hidden" name="EncodeData" id="EncodeData" />
+    <input type="hidden" name="param_r1" id="param_r1" value="join" />
+    <input type="hidden" name="param_r2" id="param_r2" value="" />
+    <input type="hidden" name="accreditation" id="accreditation" value="<%=ipinCIYn %>" />
+</form>
+<!-- 가상주민번호 서비스 팝업을 호출하기 위해서는 다음과 같은 form이 필요합니다. -->
+<form name="form_ipin" method="post" accept-charset="euc-kr">
+    <input type="hidden" name="m" value="pubmain">
+    <!-- 필수 데이타로, 누락하시면 안됩니다. -->
+    <input type="hidden" name="enc_data">
+    <!-- 위에서 업체정보를 암호화 한 데이타입니다. -->
+    <!-- 업체에서 응답받기 원하는 데이타를 설정하기 위해 사용할 수 있으며, 인증결과 응답시 해당 값을 그대로 송신합니다. 해당 파라미터는 추가하실 수 없습니다. -->
+    <input type="hidden" name="param_r1" value="">
+    <input type="hidden" name="param_r2" value="">
+    <input type="hidden" name="param_r3" value="">
+</form>
+
+<!-- 가상주민번호 서비스 팝업 페이지에서 사용자가 인증을 받으면 암호화된 사용자 정보는 해당 팝업창으로 받게됩니다. 따라서 부모 페이지로 이동하기 위해서는 다음과 같은 form이 필요합니다. -->
+<form name="vnoform" method="post">
+    <!-- 인증받은 사용자 정보 암호화 데이타입니다. -->
+    <input type="hidden" name="enc_data">
+    <!-- 업체에서 응답받기 원하는 데이타를 설정하기 위해 사용할 수 있으며, 인증결과 응답시 해당 값을 그대로 송신합니다. 해당 파라미터는 추가하실 수 없습니다. -->
+    <input type="hidden" name="param_r1" value="">
+    <input type="hidden" name="param_r2" value="">
+    <input type="hidden" name="param_r3" value="">
+</form>
+
+#이벤트
+//휴대폰 본인인증
+function jfCheckAccreditation(val) {
+$.ajax(
+    {
+    type:"POST",
+    dataType: "json",
+    async:true,
+    <a target="_blank" href="/order.do?cmd=getCheckAccreditationAjax&amp;AUTH_VALUE=&quot;+val">
+    url:"/order.do?cmd=getCheckAccreditationAjax&amp;AUTH_VALUE="+val</a>,
+    success:function(data){
+    if(data.checkPlusResultCode == "0"
+    data.checkPlusRequestNo != ""
+    data.checkPlusCipherData != "") {
+    document.checkPlusForm.EncodeData.value = data.checkPlusCipherData;
+    document.checkPlusForm.param_r2.value = val;fnPopup();}
+    },
+    error:function(err){
+    alert("오류가 발생하였습니다.\n[" + err.status + "]");}});
+    }
+//휴대폰 인증팝업
+function fnPopup(){
+    window.open('', 'accreditationPopup', 'width=500, height=550, top=100, left=100, fullscreen=no, menubar=no, status=no, toolbar=no, titlebar=yes, location=no, scrollbar=no');
+    document.checkPlusForm.action = "<a target="_blank" href="https://nice.checkplus.co.kr/CheckPlusSafeModel/checkplus.cb">https://nice.checkplus.co.kr/CheckPlusSafeModel/checkplus.cb</a>";
+    document.checkPlusForm.target = "accreditationPopup";document.checkPlusForm.submit();
+}
+
+//아이핀 본인인증
+function jfCheckIpinAccreditation()
+{
+    $.ajax({
+    type:"POST",
+    dataType: "json",
+    async:true,
+    <a target="_blank" href="&quot;/order.do?cmd=getCheckIpinAccreditationAjax">url:"/order.do?cmd=getCheckIpinAccreditationAjax</a>",
+    success:function(data){if(data.checkPlusResultCode == "0" &amp;&amp; data.checkPlusRequestNo != "" &amp;&amp;
+    data.checkPlusCipherData != ""){
+    document.form_ipin.enc_data.value = data.checkPlusCipherData;//
+    document.checkPlusForm.param_r2.value = val;fnIpinPopup();}
+    },
+    error:function(err){
+    alert("오류가 발생하였습니다.\n[" + err.status + "]");}});
+    }
+    window.name ="Parent_window";
+
+//아이핀 인증팝업
+function fnIpinPopup()
+{
+ window.open('', 'popupIPIN2', 'width=450, height=550, top=100, left=100, fullscreen=no, menubar=no, status=no, toolbar=no, titlebar=yes, location=no, scrollbar=no');
+ document.form_ipin.target = "popupIPIN2";
+ document.form_ipin.action = "<a target="_blank" href="https://cert.vno.co.kr/ipin.cb">https://cert.vno.co.kr/ipin.cb</a>";
+ document.charset = "euc-kr";document.form_ipin.submit();
+ if (document.charset) {document.charset = "utf-8";}}
+
+ #컨트롤러
+ /** * 휴대폰 본인인증 *
+ @param mapping *
+ @param form *
+ @param request *
+ @param response *
+ @throws Exception */
+ public void getCheckAccreditationAjax(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response)
+ throws Exception {
+ JSONObject json = new JSONObject();
+ NGMap configMap = NGResourceBundle.getInstance().get("config");
+ CPClient client = new CPClient();
+ NGMap params = NGParameterUtil.getParameterMap(request);
+ try {
+ /** NICE로부터 부여받은 사이트 코드 */
+ String siteCode = StringUtil.convNull(configMap.getString("namecheck.checkplus.site_cd"),
+ LsnWebVar.NICE_SITE_CD);
+ /** NICE로부터 부여받은 사이트 패스워드 */
+ String sitePwd = StringUtil.convNull(configMap.getString("namecheck.checkplus.site_passwd"),
+ snWebVar.NICE_PASSWD);
+ /**
+   * ┌─[rtnSuccessUrl] 변수에 대한 * 설명─────────────────────────────────────────────────────────
+        NICE * 신용평가정보 팝업에서 인증받은 사용자 정보를 암호화하여 귀사로 리턴합니다. 따라서 암호화된 결과 데이타를 리턴받으실 URL
+   * 정의해 주세요. *  *
+   * URL 은 http 부터 입력해 주셔야하며, 외부에서도 접속이 유효한 정보여야 합니다.
+   * 당사에서 배포해드린 샘플페이지
+   * 중, ipin_process.jsp 페이지가 사용자 정보를 리턴받는 예제 페이지입니다. *
+   * 아래는 URL 예제이며, 귀사의 서비스 도메인과 서버에 업로드 된 샘플페이지 위치에 따라 경로를 설정하시기 바랍니다. 예 -
+   * <a target="_blank" href="http://www.test.co.kr/ipin_process.jsp">http://www.test.co.kr/ipin_process.jsp</a>,
+   * <a target="_blank" href="https://www.test.co.kr/ipin_process.jsp">https://www.test.co.kr/ipin_process.jsp</a>,
+   * <a target="_blank" href="https://test.co.kr/ipin_process.jsp">https://test.co.kr/ipin_process.jsp</a>
+   * └─────────────────────────────────
+   * ─────────────────────────────────────────────────────── */
+
+   String rtnSuccessUrl = "http:" + configMap.getString("domain.lsnmall.web") + "/order.do?cmd=checkPlusSuccess";
+   String rtnErrorUrl = "http:" + configMap.getString("domain.lsnmall.web") + "/order.do?cmd=checkPlusError";<
+
+   /** * ┌──[requestNo] 변수에 대한 * 설명────────────────────────────────────────────────────── CP 요청번호로
+    * 귀사에서 데이타를 임의로 정의하거나, 당사에서 배포된 모듈로 데이타를 생성할 수 있습니다. CP 요청번호는 인증 완료 후,
+    * 암호화된 결과 데이타에 함께 제공되며 데이타 위변조 방지 및 특정 사용자가 요청한 것임을 확인하기 위한 목적으로 이용하실 수 * 있습니다. *
+    * 따라서 귀사의 프로세스에 응용하여 이용할 수 있는 데이타이기에, 필수값은 아닙니다.
+    * └────────────────────── * ─────────────────────────────────────────────────────────────── */
+    String requestNo = client.getRequestNO(siteCode);
+    log.info("## commandMap:"+params.toString());
+
+   /** M: 핸드폰, C: 신용카드, X: 공인인증서, default: "" */
+   String authType = StringUtil.convNull(params.getString("AUTH_VALUE"),"M");
+   /** Y : 취소버튼 있음 / N : 취소버튼 없음 */
+   String popupGubun = "N";
+   ** "":(기본 웹페이지) / "Mobile":(모바일페이지) */
+   String customize = "";
+
+   /** 입력될 plain 데이타를 만든다. */
+   String plainData = "7:REQ_SEQ" + requestNo.getBytes().length + ":"+ requestNo +
+                      "8:SITECODE" + siteCode.getBytes().length + ":"+ siteCode +
+                      "9:AUTH_TYPE" + authType.getBytes().length + ":"+ authType +
+                      "7:RTN_URL" + rtnSuccessUrl.getBytes().length+ ":" + rtnSuccessUrl +
+                      "7:ERR_URL"+ rtnErrorUrl.getBytes().length + ":" + rtnErrorUrl+
+                      "11:POPUP_GUBUN" + popupGubun.getBytes().length + ":"+ popupGubun +
+                      "9:CUSTOMIZE" + customize.getBytes().length+ ":" + customize;
+
+   /** * Method 결과값(resultCode)에 따라, 프로세스 진행여부를 파악합니다. */
+   int resultCode = client.fnEncode(siteCode, sitePwd, plainData);
+   String checkPlusChipherData = "";
+
+   if (resultCode == 0) {
+     checkPlusChipherData = StringUtil.convNull(client.getCipherData(), "");
+   } else if (resultCode == -1) {
+     log.info("■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■");
+     log.info("checkPlusResultCode : " + resultCode+ ", message : 암호화 시스템 에러입니다.");
+     log.info("■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■");
+   } else if (resultCode == -2) {
+     log.info("■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■");
+     log.info("checkPlusResultCode : " + resultCode+ ", message : 암호화 처리오류입니다.");l
+     og.info("■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■");
+   } else if (resultCode == -3) {
+     log.info("■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■");
+     log.info("checkPlusResultCode : " + resultCode+ ", message : 암호화 데이터 오류입니다.");
+     log.info("■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■");
+   } else if (resultCode == -9) {
+     log.info("■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■");
+     log.info("checkPlusResultCode : " + resultCode+ ", message : 암호화 데이터 오류입니다.");
+     log.info("■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■");
+     } else {
+     log.info("■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■");
+     log.info("checkPlusResultCode : " + resultCode+ ", message : 알수 없는 에러 입니다.");
+     log.info("■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■");}
+     json.put("checkPlusResultCode", Integer.toString(resultCode));
+     json.put("checkPlusRequestNo", requestNo);
+     json.put("checkPlusCipherData", checkPlusChipherData);
+     //return json;
+     } catch (Exception e) {
+     //json.put("RESULT_CODE", "-1000");
+     json.put("RESULT_CODE", "fail");}<
+     write(response, json.toString());}
+     /** * 휴대폰 본인인증 성공 *
+     @param request *
+     @param commandMap *
+     @return *
+     @throws Exception */
+     @SuppressWarnings("unchecked")
+     public ActionForward checkPlusSuccess(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response)
+     throws Exception {
+     //String forwardUrl = request.getParameter("cmd");CPClient client = new CPClient();
+     Map<String, Object> resultData = new HashMap<String, Object>();
+     NGMap configMap = NGResourceBundle.getInstance().get("config");NGMap returnInfo = new NGMap();
+     /** NICE로부터 부여받은 사이트 코드 */
+     String siteCode = StringUtil.convNull(configMap.getString("namecheck.checkplus.site_cd"), LsnWebVar.NICE_SITE_CD);
+     /** NICE로부터 부여받은 사이트 패스워드 */
+        String sitePwd = StringUtil.convNull(configMap.getString("namecheck.checkplus.site_passwd"), LsnWebVar.NICE_PASSWD);
+        String responseData = request.getParameter("EncodeData");
+        String closeMsg = "인증에 실패하였습니다.";
+        int resultCode = client.fnDecode(siteCode, sitePwd, responseData);
+        NGMap accreditationMap = new NGMap();
+        if (resultCode == 0) {
+        String painData = client.getPlainData();resultData = client.fnParse(painData);
+        // TODO 여기에 ci 데이터 집어넣어주는 로직이 정의되어야함
+        returnInfo.setString("CUST_ID", LsnWebSession.getCustId(request));
+        returnInfo.setString("IPIN_CI", (String)resultData.get("CI"));
+        lsnComOrderService.updateMemberAccreditationInfo(returnInfo);
+        closeMsg = "인증에 성공하였습니다.";} else if (resultCode == -1) {
+        closeMsg = "인증에 실패하였습니다.";
+        log.info("■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■");
+        log.info("checkPlusResultCode : " + resultCode+ ", message : 복호화 시스템 에러입니다.");
+        log.info("■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■");
+        } else if (resultCode == -4) {
+        closeMsg = "인증에 실패하였습니다.";
+        log.info("■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■");
+        log.info("checkPlusResultCode : " + resultCode+ ", message : 복호화 처리오류입니다.");
+        log.info("■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■");
+        } else if (resultCode == -5) {
+        closeMsg = "인증에 실패하였습니다.";
+        log.info("■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■");
+        log.info("checkPlusResultCode : " + resultCode+ ", message : 복호화 해쉬 오류입니다.");
+        log.info("■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■");
+        } else if (resultCode == -6) {closeMsg = "인증에 실패하였습니다.";
+        log.info("■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■");
+        log.info("checkPlusResultCode : " + resultCode+ ", message : 복호화 데이터 오류입니다.");
+        log.info("■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■");
+        } else if (resultCode == -9) {closeMsg = "인증에 실패하였습니다.";
+        log.info("■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■");
+        log.info("checkPlusResultCode : " + resultCode+ ", message : 입력 데이터 오류입니다.");
+        log.info("■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■")
+        ;} else if (resultCode == -12) {closeMsg = "인증에 실패하였습니다.";
+        log.info("■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■");
+        log.info("checkPlusResultCode : " + resultCode+ ", message : 사이트 패스워드 오류입니다.");
+        log.info("■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■");
+        } else {c
+        loseMsg = "인증에 실패하였습니다.";
+        log.info("■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■");
+        log.info("checkPlusResultCode : " + resultCode+ ", message : 알수 없는 에러 입니다.");
+        log.info("■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■");
+        }
+        request.setAttribute("closeMsg", closeMsg);
+        request.setAttribute("resultCode", resultCode);
+        return mapping.findForward("checkPlusResult");//
+        return new ActionForward(forwardUrl, true);
+        }
+        /** * 본인인증 실패 *
+        @param request *
+        @param commandMap *
+        @return *
+        @throws Exception *///
+        @SuppressWarnings("unchecked")
+        public ActionForward checkPlusError(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response)
+        throws Exception {//NGMap configMap = NGResourceBundle.getInstance().get("config");//CPClient client = new CPClient();String closeMsg = "인증에 실패하였습니다.";
+        /** NICE로부터 부여받은 사이트 코드 *///
+        String siteCode = StringUtil.convNull(configMap.getString("namecheck.checkplus.site_cd"), LsnWebVar.NICE_SITE_CD);
+        /** NICE로부터 부여받은 사이트 패스워드 *///
+        String sitePwd = StringUtil.convNull(configMap.getString("namecheck.checkplus.site_passwd"), LsnWebVar.NICE_PASSWD);
+        String responseData = request.getParameter("EncodeData");
+        int resultCode = 99;
+        // 실패코드 강제 삽입
+        //int resultCode = client.fnDecode(siteCode, sitePwd, responseData);
+        request.setAttribute("closeMsg", closeMsg);
+        request.setAttribute("resultCode", resultCode);
+        return mapping.findForward("checkPlusResult");
+        }
+        /** * 아이핀 본인인증 *
+        @param mapping *
+        @param form *
+        @param request *
+        @param response *
+        @throws Exception */
+        public void getCheckIpinAccreditationAjax(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response)
+        throws Exception {
+        JSONObject json = new JSONObject();
+        NGMap configMap = NGResourceBundle.getInstance().get("config");
+        CPClient client = new CPClient();
+        NGMap params = NGParameterUtil.getParameterMap(request);
+        try {
+          /**NICE평가정보 Copyright(c) KOREA INFOMATION SERVICE INC. ALL RIGHTS RESERVED서비스명 :
+             가상주민번호서비스 (IPIN) 서비스페이지명 : 가상주민번호서비스 (IPIN) 호출 페이지
+             **/
+          String sSiteCode = LsnWebVar.IPIN_SITE_CD;// IPIN 서비스 사이트 코드(NICE평가정보에서 발급한 사이트코드)
+          String sSitePw = LsnWebVar.IPIN_PASSWD;// IPIN 서비스 사이트 패스워드(NICE평가정보에서 발급한 사이트패스워드)
+
+          /*┌ sReturnURL 변수에 대한 설명 ─────────────────────────────────────────────────────NICE평가정보 팝업에서 인증받은 사용자 정보를 암호화하여 귀사로 리턴합니다.따라서 암호화된 결과 데이타를 리턴받으실 URL 정의해 주세요.
+           * URL 은 http 부터 입력해 주셔야하며, 외부에서도 접속이 유효한 정보여야 합니다.* 당사에서 배포해드린 샘플페이지 중, ipin_process.jsp 페이지가 사용자 정보를 리턴받는 예제 페이지입니다.아래는 URL 예제이며, 귀사의 서비스 도메인과 서버에 업로드 된 샘플페이지 위치에 따라 경로를 설정하시기 바랍니다.예 -
+           <a target="_blank" href="http://www.test.co.kr/ipin_process.jsp">http://www.test.co.kr/ipin_process.jsp</a>,
+           <a target="_blank" href="https://www.test.co.kr/ipin_process.jsp">https://www.test.co.kr/ipin_process.jsp</a>,
+           <a target="_blank" href="https://test.co.kr/ipin_process.jsp">https://test.co.kr/ipin_process.jsp</a>
+           └────────────────────────────────────────────────────────────────────*/
+           String sReturnURL = "http:" + configMap.getString("domain.lsnmall.web") + "/order.do?cmd=checkIpinAccreditationSuccess";;
+           /*┌ sCPRequest 변수에 대한 설명 ─────────────────────────────────────────────────────
+           [CP 요청번호]로 귀사에서 데이타를 임의로 정의하거나, 당사에서 배포된 모듈로 데이타를 생성할 수 있습니다.CP 요청번호는 인증 완료 후, 암호화된 결과 데이타에 함께 제공되며데이타 위변조 방지 및 특정 사용자가 요청한 것임을 확인하기
+           위한 목적으로 이용하실 수 있습니다.따라서 귀사의 프로세스에 응용하여 이용할 수 있는 데이타이기에, 필수값은 아닙니다.
+           └────────────────────────────────────────────────────────────────────*/
+           String sCPRequest = "";// 객체 생성IPIN2Client
+           pClient = new IPIN2Client();// 앞서 설명드린 바와같이, CP 요청번호는 배포된 모듈을 통해 아래와 같이 생성할 수 있습니다.
+           sCPRequest = pClient.getRequestNO(sSiteCode);// CP 요청번호를 세션에 저장합니다.\
+           // 현재 예제로 저장한 세션은 ipin_result.jsp 페이지에서 데이타 위변조 방지를 위해 확인하기 위함입니다.
+           // 필수사항은 아니며, 보안을 위한 권고사항입니다.
+           // session.setAttribute("CPREQUEST" , sCPRequest);// Method 결과값(iRtn)에 따라, 프로세스 진행여부를 파악합니다.
+           int iRtn = pClient.fnRequest(sSiteCode, sSitePw, sCPRequest, sReturnURL);
+           String sEncData = "";// 암호화 된 데이타
+           String sRtnMsg= "";// 처리결과 메세지
+           // Method 결과값에 따른 처리사항
+           if (iRtn == 0) {
+            // fnRequest 함수 처리시 업체정보를 암호화한 데이터를 추출합니다.
+            // 추출된 암호화된 데이타는 당사 팝업 요청시, 함께 보내주셔야 합니다.
+            sEncData = pClient.getCipherData();//
+            sRtnMsg = "정상 처리되었습니다.";
+            } else if (iRtn == -1 || iRtn == -2) {
+                sRtnMsg = "배포해 드린 서비스 모듈 중, 귀사 서버환경에 맞는 모듈을 이용해 주시기 바랍니다.<BR>"+ "귀사 서버환경에 맞는 모듈이 없다면 ..<BR>
+                <B>iRtn 값, 서버 환경정보를 정확히 확인하여 메일로 요청해 주시기 바랍니다.</B>";} else if (iRtn == -9) {sRtnMsg = "입력값 오류 : fnRequest 함수 처리시, 필요한 4개의 파라미터값의 정보를 정확하게 입력해 주시기 바랍니다.";} else {sRtnMsg = "iRtn 값 확인 후, NICE평가정보 개발 담당자에게 문의해 주세요.";}json.put("checkPlusResultCode", Integer.toString(iRtn));json.put("checkPlusRequestNo", sCPRequest);json.put("checkPlusCipherData", sEncData);} catch (Exception e) {json.put("RESULT_CODE", "fail");}</p><p>write(response, json.toString());}/** * 본인인증 성공 * @param request * @param commandMap * @return * @throws Exception */@SuppressWarnings("unchecked")public ActionForward checkIpinAccreditationSuccess(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {/********************************************************************************************************************************************NICE평가정보 Copyright(c) KOREA INFOMATION SERVICE INC. ALL RIGHTS RESERVED서비스명 : 가상주민번호서비스 (IPIN) 서비스페이지명 : 가상주민번호서비스 (IPIN) 결과 페이지*********************************************************************************************************************************************/String sSiteCode= LsnWebVar.IPIN_SITE_CD;// IPIN 서비스 사이트 코드(NICE평가정보에서 발급한 사이트코드)String sSitePw= LsnWebVar.IPIN_PASSWD;// IPIN 서비스 사이트 패스워드(NICE평가정보에서 발급한 사이트패스워드)// 사용자 정보 및 CP 요청번호를 암호화한 데이타입니다.String sResponseData = requestReplace(request.getParameter("enc_data"), "encodeData");</p><p>// CP 요청번호 : ipin_main.jsp 에서 세션 처리한 데이타// String sCPRequest = (String)session.getAttribute("CPREQUEST");</p><p>// 객체 생성IPIN2Client pClient = new IPIN2Client();NGMap returnInfo = new NGMap();/*┌ 복호화 함수 설명 ──────────────────────────────────────────────────────────Method 결과값(iRtn)에 따라, 프로세스 진행여부를 파악합니다.fnResponse 함수는 결과 데이타를 복호화 하는 함수이며,'sCPRequest'값을 추가로 보내시면 CP요청번호 일치여부도 확인하는 함수입니다. (세션에 넣은 sCPRequest 데이타로 검증)따라서 귀사에서 원하는 함수로 이용하시기 바랍니다.└────────────────────────────────────────────────────────────────────*/int iRtn = pClient.fnResponse(sSiteCode, sSitePw, sResponseData);//int iRtn = pClient.fnResponse(sSiteCode, sSitePw, sResponseData, sCPRequest);String sRtnMsg = "";String sCoInfo1= pClient.getCoInfo1();// 연계정보 확인값 (CI - 88 byte 고유값)String sCIUpdate= pClient.getCIUpdate();// CI 갱신정보//TODO ci값 처리returnInfo.setString("CUST_ID", LsnWebSession.getCustId(request));returnInfo.setString("IPIN_CI", sCoInfo1);lsnComOrderService.updateMemberAccreditationInfo(returnInfo);// Method 결과값에 따른 처리사항if (iRtn == 1) {</p><p>/* * 다음과 같이 사용자 정보를 추출할 수 있습니다. 사용자에게 보여주는 정보는, '이름' 데이타만 노출 가능합니다. *  * 사용자 정보를 다른 페이지에서 이용하실 경우에는 보안을 위하여 암호화 데이타(sResponseData)를 통신하여 * 복호화 후 이용하실것을 권장합니다. (현재 페이지와 같은 처리방식) *  * 만약, 복호화된 정보를 통신해야 하는 경우엔 데이타가 유출되지 않도록 주의해 주세요. (세션처리 권장) form * 태그의 hidden 처리는 데이타 유출 위험이 높으므로 권장하지 않습니다. */</p><p>iRtn = 0; // 휴대폰 본인인증 결과페이지와 같이 쓰는데 휴대폰인증 성공값이 0이라 아이핀 성공의 경우 0으로 치환sRtnMsg = "정상 처리되었습니다.";</p><p>} else if (iRtn == -1 || iRtn == -4) {sRtnMsg = "iRtn 값, 서버 환경정보를 정확히 확인하여 주시기 바랍니다.";} else if (iRtn == -6) {sRtnMsg = "당사는 한글 charset 정보를 euc-kr 로 처리하고 있으니, euc-kr 에 대해서 허용해 주시기 바랍니다.<BR>"+ "한글 charset 정보가 명확하다면 ..<BR><B>iRtn 값, 서버 환경정보를 정확히 확인하여 메일로 요청해 주시기 바랍니다.</B>";} else if (iRtn == -9) {sRtnMsg = "입력값 오류 : fnResponse 함수 처리시, 필요한 파라미터값의 정보를 정확하게 입력해 주시기 바랍니다.";} else if (iRtn == -12) {sRtnMsg = "CP 비밀번호 불일치 : IPIN 서비스 사이트 패스워드를 확인해 주시기 바랍니다.";} else if (iRtn == -13) {sRtnMsg = "CP 요청번호 불일치 : 세션에 넣은 sCPRequest 데이타를 확인해 주시기 바랍니다.";} else {sRtnMsg = "iRtn 값 확인 후, NICE평가정보 개발 담당자에게 문의해 주세요.";}request.setAttribute("closeMsg", sRtnMsg);request.setAttribute("resultCode", iRtn);return mapping.findForward("checkPlusResult");}public String requestReplace(String paramValue, String gubun) {String result = "";</p><p>if (paramValue != null) {</p><p>paramValue = paramValue.replaceAll("<", "&amp;lt;").replaceAll(">", "&amp;gt;");</p><p>paramValue = paramValue.replaceAll("\\*", "");paramValue = paramValue.replaceAll("\\?", "");paramValue = paramValue.replaceAll("\\[", "");paramValue = paramValue.replaceAll("\\{", "");paramValue = paramValue.replaceAll("\\(", "");paramValue = paramValue.replaceAll("\\)", "");paramValue = paramValue.replaceAll("\\^", "");paramValue = paramValue.replaceAll("<a target="_blank" href="file://\\$">\\$</a>", "");paramValue = paramValue.replaceAll("'", "");paramValue = paramValue.replaceAll("@", "");paramValue = paramValue.replaceAll("%", "");paramValue = paramValue.replaceAll(";", "");paramValue = paramValue.replaceAll(":", "");paramValue = paramValue.replaceAll("-", "");paramValue = paramValue.replaceAll("#", "");paramValue = paramValue.replaceAll("--", "");paramValue = paramValue.replaceAll("-", "");paramValue = paramValue.replaceAll(",", "");</p><p>if (gubun != "encodeData") {paramValue = paramValue.replaceAll("\\+", "");paramValue = paramValue.replaceAll("/", "");paramValue = paramValue.replaceAll("=", "");}</p><p>result = paramValue;}return result;}</p>
+     }
+   }
+   }
+   }
+
+		
+
+		

@@ -35,3 +35,15 @@ type SomeConstructor = {
 function fn(ctor: SomeConstructor) {
     return new ctor("hello")
 }
+
+class One {
+    static write(){
+        console.log("Yes! I did!");
+    }
+}
+
+class Two {
+    tryingMethod(){
+        One.write();
+    }
+}

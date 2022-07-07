@@ -57,10 +57,45 @@
     <button type="button" class="btn-king">킹받네</button>
 
     <div id="data"></div>
-    <!--<script src="./main.js"></script>
-    <script src="./array.js"></script>
+    <script type="module" src="./app.js"></script>
+    <!--<script src="./array.js"></script>
     <script src="./map.js"></script>-->
     <script>
+        console.log('aaa')
+        window.onbeforeunload = function (e) {
+            e.preventDefault()
+            alert('ttttt')
+
+        }
+
+        setTimeout(()=> {
+            window.location.href = 'http://www.naver.com'
+        },3000)
+
+
+
+
+        window.addEventListener('pagehide', (event) => {
+            // 표준에 따라 기본 동작 방지  event.preventDefault();
+            event.preventDefault()
+            alert('test')
+        });
+
+        class Rectangle {
+            constructor(width, height) {
+                this.width = width
+                this.height = height
+            }
+            get area () {
+                return this.calcArea()
+            }
+
+            calcArea() {
+                return this.height * this.width
+            }
+        }
+
+
         const email = document.querySelector("#email")
         email.addEventListener('keyup', fn_submit)
 
@@ -125,10 +160,10 @@
             if (id === pw && pw.length > 0) {
                 ischk1 = 'id'
             }
-            if (pw.indexOf(birthfirst) >= 0 && birth.length > 0) {
+            if (pw.indexOf(birthfirst) >-1 && birth.length > 0) {
                 ischk2 = 'birth'
             }
-            if (pw.indexOf(monthfirst) >= 0 && month.length > 0) {
+            if (pw.indexOf(monthfirst) >-1 && month.length > 0) {
                 ischk3 = 'month'
             }
 
