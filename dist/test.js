@@ -1,31 +1,3 @@
-// form.js
-if (age < 14) {
-    const params = {
-
-    }
-    window.localStorage.setItem('kidForm', JSON.stringify(params))
-}
-
-// parental-constant.html(verify.js) 법정대리인
-/**
- * 회원가입 폼에서 넘어왔을 경우
- * 본인인증 => 보호자 인증
- */
-const referrer = document.referrer
-const isKidForm = referrer.includes('form')
-const isParent = data.ci // 인증데이터가 있으면
-
-const data = data //
-
-if (isKidForm) {
-    // 회원가입폼에서 넘어왔을 경우 - 회원가입시키기
-    joinKid.call(this, data, type)
-} else {
-    // 회원가입폼으로 넘기기
-    sendFormData.call(this, data, type)
-}
-
-
 
 // 14세미만 회원가입 - FORM => 법정대리인 => 회원가입 완료
 async function joinKid(data, type) {
@@ -52,5 +24,43 @@ function sendFormData(data, type) {
     window.localStorage.setItem('auth', sendFormData)
     window.location.href = '/join/form/self?auth=' + type
 }
+
+/**
+ * 필수값 체크 항목
+ **/
+const reqCheckInput = [
+    { value: false, elem: 'formJoin01'},
+    { value: false, elem: 'formJoin02' },
+    { value: true, elem: 'formJoin03' },
+    { value: false, elem: 'formJoin04' },
+    { value: false, elem: 'formJoin05' },
+    { value: false, elem: 'formJoin06' },
+    { value: false, elem: 'formJoin07' }
+]
+
+function inputCheck() {
+    return reqCheckInput.every((item) => item.value=== true)
+}
+
+/**
+ * 버튼 클릭시 빕값 인풋 포커스
+ **/
+
+if (!inputCheck()) {
+    const result = reqCheckInput.find(v => v.value === true);
+    if (typeof result !== "undefined") {
+        console.log(result)
+        $(`#${result.elem}`).focus()
+    }
+}
+
+$('input').on('input change', (e) => {
+    const id = e.target.id
+    const value = e.target.value
+    console.log(id, value)
+    const findResult = reqCheckInput.find((item) => item.elem === id)
+    findResult.value = true
+    console.log(findResult)
+})
 
 
